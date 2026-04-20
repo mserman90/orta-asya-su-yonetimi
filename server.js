@@ -63,7 +63,7 @@ app.get('/api/news', async (req, res) => {
   res.json(news);
 });
 
-app.post('/api/news', async (req, res) => {
+app.post('/api/news', async (req, res) => {  
   const news = await getNews();
   const newItem = { id: Date.now(), date: new Date().toISOString().split('T')[0], region: req.body.region || 'all', ...req.body };
   news.unshift(newItem);
