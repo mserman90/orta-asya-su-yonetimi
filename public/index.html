@@ -60,19 +60,30 @@
         let currentRegion = 'all';
 
         const regions = {
-            'all': { center: [25, 30], zoom: 3 },
-            'europe': { center: [48, 15], zoom: 4 },
-            'africa': { center: [5, 20], zoom: 3 },
-            'arab': { center: [25, 45], zoom: 4 },
+            'all':          { center: [25, 30], zoom: 3 },
+            'europe':       { center: [48, 15], zoom: 4 },
+            'africa':       { center: [5, 20],  zoom: 3 },
+            'arab':         { center: [25, 45], zoom: 4 },
             'central-asia': { center: [42, 65], zoom: 5 }
         };
 
         const riverPaths = [
-            { coords: [[48.1, 11.6], [48.2, 14.3], [47.5, 19.0], [44.8, 20.4], [44.4, 26.1], [45.2, 29.6]], color: '#2ecc71', name: 'Tuna Nehri' },
-            { coords: [[-0.5, 33.5], [15.5, 32.5], [24.0, 32.8], [30.0, 31.2], [31.5, 31.2]], color: '#3498db', name: 'Nil Nehri' },
-            { coords: [[-1.5, 29.5], [-0.5, 25.0], [2.0, 22.0], [0.0, 18.0], [-4.3, 15.3], [-6.1, 12.4]], color: '#3498db', name: 'Kongo Nehri' },
-            { coords: [[40, 70], [42, 68], [44, 65], [46, 61]], color: '#3498db', name: 'Sirderya' },
-            { coords: [[37, 65], [39, 63], [41, 61], [43, 59]], color: '#3498db', name: 'Amuderya' }
+            // Avrupa
+            { coords: [[48.1,11.6],[48.2,14.3],[47.5,19.0],[44.8,20.4],[44.4,26.1],[45.2,29.6]], color: '#2ecc71', name: 'Tuna Nehri' },
+            { coords: [[47.0,7.5],[48.5,7.7],[50.0,8.2],[51.0,6.9],[51.8,6.1],[51.9,4.5]], color: '#27ae60', name: 'Ren Nehri' },
+            { coords: [[46.8,2.3],[47.5,3.5],[48.4,4.8],[48.9,2.3],[48.9,2.4]], color: '#16a085', name: 'Sen Nehri' },
+            // Afrika
+            { coords: [[-0.5,33.5],[15.5,32.5],[24.0,32.8],[30.0,31.2],[31.5,31.2]], color: '#3498db', name: 'Nil Nehri' },
+            { coords: [[-1.5,29.5],[-0.5,25.0],[2.0,22.0],[0.0,18.0],[-4.3,15.3],[-6.1,12.4]], color: '#2980b9', name: 'Kongo Nehri' },
+            { coords: [[13.5,-1.5],[13.0,2.0],[12.5,4.0],[9.5,6.5],[6.5,3.5],[5.5,3.3]], color: '#1abc9c', name: 'Nijer Nehri' },
+            { coords: [[-29.0,26.5],[-30.5,27.5],[-32.0,26.5],[-33.5,26.8],[-33.9,25.6]], color: '#16a085', name: 'Orange Nehri' },
+            // Arap Dünyası
+            { coords: [[38.5,39.0],[36.8,38.0],[35.5,40.0],[34.0,43.0],[32.0,44.5],[31.0,47.5],[30.5,47.8]], color: '#e67e22', name: 'Fırat Nehri' },
+            { coords: [[37.5,42.0],[36.5,43.0],[35.5,43.5],[34.5,44.5],[33.0,44.5],[31.5,47.5],[30.5,47.8]], color: '#d35400', name: 'Dicle Nehri' },
+            { coords: [[29.5,35.5],[29.0,36.0],[28.5,36.5],[27.5,37.5],[26.5,38.5]], color: '#c0392b', name: 'Ürdün Nehri' },
+            // Orta Asya
+            { coords: [[40,70],[42,68],[44,65],[46,61]], color: '#8e44ad', name: 'Sirderya' },
+            { coords: [[37,65],[39,63],[41,61],[43,59]], color: '#9b59b6', name: 'Amuderya' }
         ];
 
         function drawRivers() {
@@ -86,30 +97,26 @@
             try {
                 const res = await fetch('/api/news');
                 const news = await res.json();
-                
                 markers.clearLayers();
                 const list = document.getElementById('news-list');
                 list.innerHTML = '';
-
                 const filtered = currentRegion === 'all' ? news : news.filter(n => n.region === currentRegion);
-
                 filtered.forEach(item => {
                     const marker = L.marker([item.lat, item.lng]).addTo(markers);
                     const popupContent = `
                         <div class="p-2" style="min-width: 200px;">
                             <div class="flex items-center gap-2 mb-1">
-                                <span class="text-xl">${item.emoji || '💧'}</span>
+                                <span class="text-xl">${item.emoji || '\u{1F4A7}'}</span>
                                 <h3 class="font-bold text-gray-900">${item.title}</h3>
                             </div>
                             <p class="text-xs text-gray-600 mb-2">${item.description}</p>
                             <div class="flex justify-between items-center border-t pt-2">
                                 <span class="text-[10px] bg-gray-100 px-2 py-0.5 rounded text-gray-500">${item.date}</span>
-                                <a href="${item.url}" target="_blank" class="text-[10px] font-semibold text-blue-600 hover:underline">Kaynağa Git →</a>
+                                <a href="${item.url}" target="_blank" class="text-[10px] font-semibold text-blue-600 hover:underline">Kaynaga Git &rarr;</a>
                             </div>
                         </div>
                     `;
                     marker.bindPopup(popupContent);
-
                     const card = document.createElement('div');
                     card.className = 'news-card bg-white p-4 rounded-xl border border-gray-100 cursor-pointer shadow-sm';
                     card.innerHTML = `
@@ -121,22 +128,16 @@
                         <p class="text-xs text-gray-500 line-clamp-2">${item.description}</p>
                         <div class="mt-2 text-[10px] text-blue-500 font-medium">Haritada Göster</div>
                     `;
-                    card.onclick = () => {
-                        map.setView([item.lat, item.lng], 6);
-                        marker.openPopup();
-                    };
+                    card.onclick = () => { map.setView([item.lat, item.lng], 6); marker.openPopup(); };
                     list.appendChild(card);
                 });
-            } catch (err) {
-                console.error(err);
-            }
+            } catch (err) { console.error(err); }
         }
 
         function setRegion(region) {
             currentRegion = region;
             const config = regions[region];
             map.flyTo(config.center, config.zoom);
-            
             document.querySelectorAll('.filter-btn').forEach(btn => {
                 btn.classList.remove('active', 'bg-gray-800', 'text-white');
                 btn.classList.add('bg-white', 'text-gray-800', 'border');
@@ -144,7 +145,6 @@
             const activeBtn = document.getElementById('btn-' + region);
             activeBtn.classList.add('active', 'bg-gray-800', 'text-white');
             activeBtn.classList.remove('bg-white', 'border');
-            
             loadNews();
         }
 
