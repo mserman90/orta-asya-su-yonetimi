@@ -1,139 +1,159 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kuresel Su Yonetimi Haritasi</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
-    body { font-family: 'Inter', system-ui, sans-serif; }
-    #map { height: 100vh; width: 100%; }
-    .news-card { transition: all 0.3s cubic-bezier(0.4,0,0.2,1); }
-    .news-card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1); }
-    .filter-btn { transition: all 0.2s; }
-    .filter-btn.active { font-weight: 600; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dünya Su Haberleri</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        #map { height: 100vh; width: 100%; }
+        .news-card { transition: all 0.3s cubic-bezier(0.4,0,0.2,1); }
+        .news-card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1); }
+        .filter-btn { transition: all 0.2s; }
+        .filter-btn.active { font-weight: 600; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+    </style>
 </head>
 <body class="bg-gray-50">
-  <header class="bg-white border-b shadow-sm sticky top-0 z-50">
-    <div class="max-w-screen-2xl mx-auto px-4 py-3 flex items-center justify-between gap-4 flex-wrap">
-      <div class="flex items-center gap-x-3">
-        <div class="w-10 h-10 bg-blue-600 rounded-2xl flex items-center justify-center text-white text-2xl">&#128167;</div>
-        <div>
-          <h1 class="text-xl font-semibold text-gray-900">Su Yonetimi Haritasi</h1>
-          <p class="text-xs text-gray-500">Global - Haftalik Guncel Veriler</p>
+    <header class="bg-white border-b shadow-sm sticky top-0 z-[1000]">
+        <div class="max-w-screen-2xl mx-auto px-4 py-3 flex items-center justify-between gap-4 flex-wrap">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-blue-600 rounded-2xl flex items-center justify-center text-white text-2xl">&#128167;</div>
+                <div>
+                    <h1 class="text-xl font-semibold text-gray-900">Dünya Su Haberleri</h1>
+                    <p class="text-xs text-gray-500">Global - Haftalik Guncel Veriler</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 flex-wrap">
+                <button onclick="setRegion('all')" id="btn-all" class="filter-btn active bg-gray-800 text-white px-4 py-2 rounded-full text-xs">&#127758; Tümü</button>
+                <button onclick="setRegion('europe')" id="btn-europe" class="filter-btn bg-white border px-4 py-2 rounded-full text-xs">&#127466;&#127482; Avrupa</button>
+                <button onclick="setRegion('africa')" id="btn-africa" class="filter-btn bg-white border px-4 py-2 rounded-full text-xs">&#127757; Afrika</button>
+                <button onclick="setRegion('arab')" id="btn-arab" class="filter-btn bg-white border px-4 py-2 rounded-full text-xs">&#127480;&#127462; Arap Dünyası</button>
+                <button onclick="setRegion('central-asia')" id="btn-central-asia" class="filter-btn bg-white border px-4 py-2 rounded-full text-xs">&#127759; Orta Asya</button>
+            </div>
         </div>
-      </div>
-      <div class="flex items-center gap-2 flex-wrap">
-        <button onclick="setRegion('all')" id="btn-all" class="filter-btn active bg-gray-800 text-white px-4 py-2 rounded-full text-xs">&#127758; Tumu</button>
-        <button onclick="setRegion('central-asia')" id="btn-central-asia" class="filter-btn bg-emerald-100 text-emerald-800 px-4 py-2 rounded-full text-xs">Orta Asya</button>
-        <button onclick="setRegion('arab')" id="btn-arab" class="filter-btn bg-amber-100 text-amber-800 px-4 py-2 rounded-full text-xs">Arap Dunyasi</button>
-        <button onclick="setRegion('africa')" id="btn-africa" class="filter-btn bg-orange-100 text-orange-800 px-4 py-2 rounded-full text-xs">&#127757; Afrika</button>
-      </div>
-      <div class="flex items-center gap-3">
-        <div class="text-[10px] text-gray-400 font-mono hidden sm:block" id="last-update">20 Nisan 2026</div>
-        <button onclick="manualUpdate()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full text-xs font-medium">Guncelle</button>
-      </div>
-    </div>
-  </header>
-  <div class="flex max-w-screen-2xl mx-auto">
-    <div class="flex-1 relative">
-      <div id="map"></div>
-    </div>
-    <div class="w-80 bg-white border-l shadow-inner overflow-auto" style="height: calc(100vh - 65px)">
-      <div class="p-4">
-        <h2 class="text-sm font-semibold mb-3 flex items-center justify-between text-gray-700">Gelismeler <span id="news-count" class="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full border border-blue-100"></span></h2>
-        <div id="news-list" class="space-y-3"></div>
-      </div>
-    </div>
-  </div>
-  <script>
-    let newsData = [];
-    let map, markers = [];
-    let currentRegion = 'all';
+    </header>
 
-    async function loadNews(region) {
-      try {
-        const url = region && region !== 'all' ? '/api/news?region=' + region : '/api/news';
-        const res = await fetch(url);
-        newsData = await res.json();
-      } catch(e) { newsData = []; }
-      document.getElementById('news-count').textContent = newsData.length + ' haber';
-      renderNewsList();
-      renderMarkers();
-      
-      const bounds = {
-        'africa': [[37, -20], [-35, 55]],
-        'arab': [[35, 30], [12, 60]],
-        'central-asia': [[55, 45], [35, 85]],
-        'all': [[60, -25], [-40, 90]]
-      };
-      map.flyToBounds(bounds[region || 'all'], {padding: [30, 30], duration: 1.5});
-    }
+    <main class="flex h-[calc(100vh-69px)] overflow-hidden">
+        <aside class="w-96 bg-white border-r overflow-y-auto p-4 hidden md:block">
+            <div id="news-list" class="space-y-4">
+                <div class="animate-pulse space-y-4">
+                    <div class="h-24 bg-gray-100 rounded-xl"></div>
+                    <div class="h-24 bg-gray-100 rounded-xl"></div>
+                </div>
+            </div>
+        </aside>
+        <div id="map" class="flex-1"></div>
+    </main>
 
-    function setRegion(region) {
-      currentRegion = region;
-      document.querySelectorAll('.filter-btn').forEach(b => {
-        b.classList.remove('active', 'bg-gray-800', 'text-white');
-        if (b.id === 'btn-' + region) b.classList.add('active', 'bg-gray-800', 'text-white');
-      });
-      loadNews(region);
-    }
+    <script>
+        const map = L.map('map').setView([25, 30], 3);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+        }).addTo(map);
 
-    function initMap() {
-      map = L.map('map').setView([10, 20], 3);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(map);
-      
-      const rivers = [
-        {pts: [[4,31.6],[15,33],[31,31.7]], color: '#f59e0b', name: 'Nil'},
-        {pts: [[38,39],[30,47]], color: '#f97316', name: 'Firat'},
-        {pts: [[-1,15],[-6,25],[-10,28]], color: '#06b6d4', name: 'Kongo'},
-        {pts: [[13,7],[18,14]], color: '#ef4444', name: 'Cad Golu Havzasi'},
-        {pts: [[38,66],[43,59]], color: '#10b981', name: 'Amu Derya'},
-        {pts: [[42,74],[41,66]], color: '#3b82f6', name: 'Sir Derya'}
-      ];
-      rivers.forEach(r => L.polyline(r.pts, {color: r.color, weight: 2, opacity: 0.6}).addTo(map).bindTooltip(r.name));
-    }
+        const markers = L.layerGroup().addTo(map);
+        const rivers = L.layerGroup().addTo(map);
+        let currentRegion = 'all';
 
-    function renderMarkers() {
-      markers.forEach(m => map.removeLayer(m));
-      markers = [];
-      const colors = {'africa': '#f97316', 'arab': '#f59e0b', 'central-asia': '#3b82f6', 'all': '#64748b'};
-      newsData.forEach((news, i) => {
-        const color = colors[news.region] || colors['all'];
-        const icon = L.divIcon({
-          className: '',
-          html: '<div style="background:'+color+';width:24px;height:24px;border-radius:50%;border:2px solid white;box-shadow:0 2px 4px rgba(0,0,0,0.2);display:flex;align-items:center;justify-content:center;font-size:12px">'+(news.emoji||'💧')+'</div>',
-          iconSize: [24,24], iconAnchor: [12,12]
-        });
-        const m = L.marker([news.lat, news.lng], {icon}).addTo(map)
-          .bindPopup('<div style="width:200px"><b>'+news.title+'</b><br><small>'+news.country+'</small><p style="font-size:11px;margin-top:4px">'+news.description+'</p></div>');
-        markers.push(m);
-      });
-    }
+        const regions = {
+            'all': { center: [25, 30], zoom: 3 },
+            'europe': { center: [48, 15], zoom: 4 },
+            'africa': { center: [5, 20], zoom: 3 },
+            'arab': { center: [25, 45], zoom: 4 },
+            'central-asia': { center: [42, 65], zoom: 5 }
+        };
 
-    function renderNewsList() {
-      const container = document.getElementById('news-list');
-      container.innerHTML = '';
-      const bColors = {'africa': 'border-l-orange-500', 'arab': 'border-l-amber-500', 'central-asia': 'border-l-blue-500'};
-      newsData.forEach((news, i) => {
-        const div = document.createElement('div');
-        div.className = 'news-card bg-white border border-gray-100 border-l-4 '+(bColors[news.region]||'border-l-gray-400')+' rounded-lg p-2.5 cursor-pointer';
-        div.innerHTML = '<div class="flex items-center gap-1.5 mb-1"><span class="text-sm">'+(news.emoji||'💧')+'</span><span class="text-[9px] text-gray-400 font-medium">'+news.country+'</span></div><h3 class="font-semibold text-[11px] text-gray-800 leading-tight">'+news.title+'</h3>';
-        div.onclick = () => { map.flyTo([news.lat, news.lng], 7); setTimeout(() => markers[i].openPopup(), 1600); };
-        container.appendChild(div);
-      });
-    }
+        const riverPaths = [
+            // Tuna (Europe)
+            { coords: [[48.1, 11.6], [48.2, 14.3], [47.5, 19.0], [44.8, 20.4], [44.4, 26.1], [45.2, 29.6]], color: '#2ecc71', name: 'Tuna Nehri' },
+            // Nil (Africa/Arab)
+            { coords: [[-0.5, 33.5], [15.5, 32.5], [24.0, 32.8], [30.0, 31.2], [31.5, 31.2]], color: '#3498db', name: 'Nil Nehri' },
+            // Kongo (Africa)
+            { coords: [[-1.5, 29.5], [-0.5, 25.0], [2.0, 22.0], [0.0, 18.0], [-4.3, 15.3], [-6.1, 12.4]], color: '#3498db', name: 'Kongo Nehri' },
+            // Seyhun/Ceyhun (Central Asia)
+            { coords: [[40, 70], [42, 68], [44, 65], [46, 61]], color: '#3498db', name: 'Sirderya' },
+            { coords: [[37, 65], [39, 63], [41, 61], [43, 59]], color: '#3498db', name: 'Amuderya' }
+        ];
 
-    async function manualUpdate() {
-      await fetch('/api/news', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ title: 'Guncelleme', region: currentRegion, country: 'Bölgesel', lat: 0, lng: 0, description: 'Guncellendi.' }) });
-      loadNews(currentRegion);
-    }
+        function drawRivers() {
+            rivers.clearLayers();
+            riverPaths.forEach(p => {
+                L.polyline(p.coords, { color: p.color, weight: 3, opacity: 0.6 }).addTo(rivers).bindTooltip(p.name);
+            });
+        }
 
-    window.onload = () => { initMap(); loadNews('all'); };
-  </script>
+        async function loadNews() {
+            try {
+                const res = await fetch('/api/news');
+                const news = await res.json();
+                
+                markers.clearLayers();
+                const list = document.getElementById('news-list');
+                list.innerHTML = '';
+
+                const filtered = currentRegion === 'all' ? news : news.filter(n => n.region === currentRegion);
+
+                filtered.forEach(item => {
+                    const marker = L.marker([item.lat, item.lng]).addTo(markers);
+                    const popupContent = `
+                        <div class="p-2" style="min-width: 200px;">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="text-xl">\${item.emoji || '💧'}</span>
+                                <h3 class="font-bold text-gray-900">\${item.title}</h3>
+                            </div>
+                            <p class="text-xs text-gray-600 mb-2">\${item.description}</p>
+                            <div class="flex justify-between items-center border-t pt-2">
+                                <span class="text-[10px] bg-gray-100 px-2 py-0.5 rounded text-gray-500">\${item.date}</span>
+                                <a href="\${item.url}" target="_blank" class="text-[10px] font-semibold text-blue-600 hover:underline">Kaynağa Git →</a>
+                            </div>
+                        </div>
+                    `;
+                    marker.bindPopup(popupContent);
+
+                    const card = document.createElement('div');
+                    card.className = 'news-card bg-white p-4 rounded-xl border border-gray-100 cursor-pointer shadow-sm';
+                    card.innerHTML = `
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded">\${item.country}</span>
+                            <span class="text-[10px] text-gray-400">\${item.date}</span>
+                        </div>
+                        <h4 class="font-semibold text-gray-900 text-sm mb-1">\${item.title}</h4>
+                        <p class="text-xs text-gray-500 line-clamp-2">\${item.description}</p>
+                        <div class="mt-2 text-[10px] text-blue-500 font-medium">Haritada Göster</div>
+                    `;
+                    card.onclick = () => {
+                        map.setView([item.lat, item.lng], 6);
+                        marker.openPopup();
+                    };
+                    list.appendChild(card);
+                });
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function setRegion(region) {
+            currentRegion = region;
+            const config = regions[region];
+            map.flyTo(config.center, config.zoom);
+            
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active', 'bg-gray-800', 'text-white');
+                btn.classList.add('bg-white', 'text-gray-800', 'border');
+            });
+            const activeBtn = document.getElementById(\`btn-\${region}\`);
+            activeBtn.classList.add('active', 'bg-gray-800', 'text-white');
+            activeBtn.classList.remove('bg-white', 'border');
+            
+            loadNews();
+        }
+
+        drawRivers();
+        loadNews();
+    </script>
 </body>
 </html>
