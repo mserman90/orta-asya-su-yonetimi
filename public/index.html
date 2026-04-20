@@ -68,13 +68,9 @@
         };
 
         const riverPaths = [
-            // Tuna (Europe)
             { coords: [[48.1, 11.6], [48.2, 14.3], [47.5, 19.0], [44.8, 20.4], [44.4, 26.1], [45.2, 29.6]], color: '#2ecc71', name: 'Tuna Nehri' },
-            // Nil (Africa/Arab)
             { coords: [[-0.5, 33.5], [15.5, 32.5], [24.0, 32.8], [30.0, 31.2], [31.5, 31.2]], color: '#3498db', name: 'Nil Nehri' },
-            // Kongo (Africa)
             { coords: [[-1.5, 29.5], [-0.5, 25.0], [2.0, 22.0], [0.0, 18.0], [-4.3, 15.3], [-6.1, 12.4]], color: '#3498db', name: 'Kongo Nehri' },
-            // Seyhun/Ceyhun (Central Asia)
             { coords: [[40, 70], [42, 68], [44, 65], [46, 61]], color: '#3498db', name: 'Sirderya' },
             { coords: [[37, 65], [39, 63], [41, 61], [43, 59]], color: '#3498db', name: 'Amuderya' }
         ];
@@ -102,13 +98,13 @@
                     const popupContent = `
                         <div class="p-2" style="min-width: 200px;">
                             <div class="flex items-center gap-2 mb-1">
-                                <span class="text-xl">\${item.emoji || '💧'}</span>
-                                <h3 class="font-bold text-gray-900">\${item.title}</h3>
+                                <span class="text-xl">${item.emoji || '💧'}</span>
+                                <h3 class="font-bold text-gray-900">${item.title}</h3>
                             </div>
-                            <p class="text-xs text-gray-600 mb-2">\${item.description}</p>
+                            <p class="text-xs text-gray-600 mb-2">${item.description}</p>
                             <div class="flex justify-between items-center border-t pt-2">
-                                <span class="text-[10px] bg-gray-100 px-2 py-0.5 rounded text-gray-500">\${item.date}</span>
-                                <a href="\${item.url}" target="_blank" class="text-[10px] font-semibold text-blue-600 hover:underline">Kaynağa Git →</a>
+                                <span class="text-[10px] bg-gray-100 px-2 py-0.5 rounded text-gray-500">${item.date}</span>
+                                <a href="${item.url}" target="_blank" class="text-[10px] font-semibold text-blue-600 hover:underline">Kaynağa Git →</a>
                             </div>
                         </div>
                     `;
@@ -118,11 +114,11 @@
                     card.className = 'news-card bg-white p-4 rounded-xl border border-gray-100 cursor-pointer shadow-sm';
                     card.innerHTML = `
                         <div class="flex justify-between items-start mb-2">
-                            <span class="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded">\${item.country}</span>
-                            <span class="text-[10px] text-gray-400">\${item.date}</span>
+                            <span class="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded">${item.country}</span>
+                            <span class="text-[10px] text-gray-400">${item.date}</span>
                         </div>
-                        <h4 class="font-semibold text-gray-900 text-sm mb-1">\${item.title}</h4>
-                        <p class="text-xs text-gray-500 line-clamp-2">\${item.description}</p>
+                        <h4 class="font-semibold text-gray-900 text-sm mb-1">${item.title}</h4>
+                        <p class="text-xs text-gray-500 line-clamp-2">${item.description}</p>
                         <div class="mt-2 text-[10px] text-blue-500 font-medium">Haritada Göster</div>
                     `;
                     card.onclick = () => {
@@ -145,7 +141,7 @@
                 btn.classList.remove('active', 'bg-gray-800', 'text-white');
                 btn.classList.add('bg-white', 'text-gray-800', 'border');
             });
-            const activeBtn = document.getElementById(\`btn-\${region}\`);
+            const activeBtn = document.getElementById('btn-' + region);
             activeBtn.classList.add('active', 'bg-gray-800', 'text-white');
             activeBtn.classList.remove('bg-white', 'border');
             
